@@ -22,6 +22,8 @@ const ctx = canvas.getContext('2d');
 // css에는 일단 기본값만 설정해놓고, 값들 수정은 JS에서 할 예정
 canvas.width = 800;
 canvas.height = 800;
+ctx.lineWidth = 2;      // 붓 두께
+let isPainting = false;     // 유저가 그리고 있는지 여부
 
 
 // 참고. 그려진 canvas 정사각형의 맨 왼쪽 위에 있는 꼭지점 좌표가 (0,0)이고 여기가 기준임
@@ -247,8 +249,6 @@ if(false) {
 
     canvas.addEventListener('mousemove', onClick);
 
-    ctx.lineWidth = 2;
-    
     function onClick(event) {
         // 처음 시작할 때의 좌표 지정
         ctx.moveTo(0, 0);
@@ -262,7 +262,7 @@ if(false) {
 
 }
 
-/* 마우스를 움직이며 선 그리기 - 색 추가*/
+/* 마우스를 움직이며 선 그리기 - 색 추가 */
 // 색을 array(배열)로 만들어서 선에 색 넣기
 // 움직일 때마다, 또 새로운 선을 그릴 때마다 색을 다르게 하기
 const colors = [
@@ -279,8 +279,6 @@ const colors = [
     if(false) {
         
         canvas.addEventListener('mousemove', onClick);
-        
-        ctx.lineWidth = 2;
         
         function onClick(event) {
         // 지정한 색으로 모든 선의 색이 변하지 않도록 새 경로 생성
@@ -304,10 +302,11 @@ const colors = [
 
 }
 
-/* 클릭할 때마다 선이 그어지는 시작점을 변경하는 코드 만들어보기 */
+
+/* 숙제? 근데 숙제 검사 안 해서 이런걸 원하는건지는 모르겠음 */
+/* 1. 클릭할 때마다 선이 그어지는 시작점을 변경하는 코드 만들어보기 */
 if(false) {
     
-    ctx.lineWidth = 2;
     canvas.addEventListener('click', changeStart);
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -321,10 +320,9 @@ if(false) {
     }
 
 }
-/* 클릭할 때마다 색이 달라지는 코드 만들어보기 */
-if(true) {
+/* 2. 클릭할 때마다 색이 달라지는 코드 만들어보기 */
+if(false) {
 
-    ctx.lineWidth = 2;
     canvas.addEventListener('click', changeColor);
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -336,4 +334,135 @@ if(true) {
         ctx.lineTo(event.offsetX, event.offsetY);
         ctx.stroke();
     }
+}
+
+
+
+
+
+
+///* 2.1 - Mouse Painting */
+/* 마우스가 눌려있는 채로 움직일 때부터 손가락을 뗄 때까지 그리기 */
+
+if(false) {
+    // moveTo(): 그리지 않으면서 좌표 이동 (0, 0) => (200, 200);
+    ctx.moveTo(200, 200);
+
+    // lineTo(): 그리면서 좌표 이동 (200, 200) => (400, 400)
+    ctx.lineTo(400, 400);
+    ctx.stroke();
+}
+
+if(true) {
+    // 1. 유저가 canvas 위에서 마우스를 움직일 때마다 moveTo를 호출하기
+    // 이유: 유저는 아직 클릭을 하지 않았고, 유저가 움직일 때, ctx를 움직여주어야 하기 때문
+    //      클릭하면, 클릭한 곳에서부터 선을 그려야 함
+    //      (유저의 마우스가 있는 곳으로 ctx을 움직이고 싶음)
+    canvas.addEventListener('mousemove', onMove);
+
+    function onMove(event) {
+        // isPainting이 true이면, 유저가 마우스를 움직일 때 그리도록 하기
+        if(isPainting) {
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+            // 선을 다 그리면 함수 끝내기
+            return;
+        }
+        
+        
+        // isPainting이 false면 ctx(붓)을 움직이기만 함
+        ctx.moveTo(event.offsetX, event.offsetY);
+    }
+
+
+    // 2. 유저가 마우스를 눌렀는지 알아야 함
+    // click은 마우스를 눌렀다가 뗐을 때 발생함
+    // mousedown가 마우스를 눌렀을 때 발생함(누른 채로 있는 것)
+
+    // 마우스를 눌렀을 때, 유저가 그리고 싶어하는 걸 그리게 하기
+    canvas.addEventListener('mousedown', startPainting);
+
+    // 유저가 그리고 있는지 여부를 나타내는 isPainting의 값을 true로 변경
+    function startPainting() {
+        isPainting = true;
+    }
+
+
+    // 3. 유저가 마우스를 뗐을 때
+    canvas.addEventListener('mouseup', cancelPainting);
+
+    // 유저가 그리고 있는지 여부를 나타내는 isPainting의 값을 false로 변경
+    function cancelPainting() {
+        isPainting = false;
+        // ctx.beginPath();
+    }
+
+
+    /* 정리 */
+    // 1. 유저가 canvas위에 마우스를 올리면 즉시 마우스가 있는 곳으로 브러쉬를 움직임 (그리지는 않음) 
+    //  => ctx.moveTo(event.offsetX, event.offsetY);
+
+    // 2. 유저가 마우스를 누르면 isPainting이 true로 변경 
+    //  => canvas.addEventListener('mousedown', startPainting);
+    
+    // 3. 만약 유저가 마우스를 누른채로 움직인다면, 유저가 있던 곳에서부터 움직이는 곳까지 선을 그림 (현재 isPainting true 상태)
+    //  => ctx.lineTo(event.offsetX, event.offsetY);
+    //     ctx.stroke();
+    
+    // 4. 마우스를 떼면 isPainting이 false가 되면서 선을 그리던게 return되고 브러쉬가 움직이기만 함 (현재 isPainting false 상태)
+    //  => canvas.addEventListener('mouseup', cancelPainting);
+    //     ctx.moveTo(event.offsetX, event.offsetY);
+
+    
+
+
+
+    // canvas 안에서 마우스를 누른 상태에서 canvas 밖으로 나갔다가 다시 안으로 되돌아와도 그림을 계속 그림
+    //  => 이유: mouseup 이벤트가 실행되지 않았기 떄문 (canvas 밖으로 나갈 때까지 마우스를 누르고 있었기 때문에 onMouseUp함수는 실행되지 않음)
+    //          그렇기 때문에 isPainting이 여전히 true임
+    //          즉, 안으로 다시 돌아와서 더 이상 클릭을 하지 않아도 선이 그려지는 버그가 있음
+
+    //  => 해결방법
+    //  방법 1. canvas.addEventListener를 해주고 마우스가 떠났을 때를 감지하면 onMouseLeave 함수 호출
+    //          즉, 유저가 canvas 안에서 벗어나게 되면 더이상 누르고 있지 않다는 걸 의미함
+    //              => canvas.addEventListener('mouseleave', cancelPainting);
+    //  방법 2. document에 mouseup 이벤트를 줌
+    //          즉, 어디에서든지 마우스에서 손을 떼면 isPainting은 false가 됨
+    //              => document.addEventListener('mouseup', cancelPainting);
+
+
+    // 첫번째 방법으로 해결
+    canvas.addEventListener('mouseleave', cancelPainting);
+
+}
+
+
+
+
+
+
+///* 2.2 - Line Width */
+/* canvas 그림판에 선의 굵기를 수정할 수 있는 input 만들기 */
+const lineWidth = document.querySelector('#line-width');
+
+// 선의 굵기의 초기값을 5로 준다는 의미
+// 초기값 설정은 html 파일에서 했음
+ctx.lineWidth = lineWidth.value;
+
+if(true) {
+    // 1. html 파일에 input 태그 생성
+    //  - 기본값 5, 범위: 1~10, 단계: 0.5(값 설정 안했을 시 디폴트는 1)
+    //      => <input id="line-width" type="range" value="5" min="1" max="10" />
+
+    // 2. 선의 굵기를 조절하는 input 태그가 올라가거나 내려가는걸 알아차리는 Listener 생성하기
+    lineWidth.addEventListener('change', onLineWidthChange);
+
+    function onLineWidthChange(event) {
+        // 모든 line들은 같은 path로 그려지기 때문에 새 경로로 시작해야 함
+        // 여기있는 onLineWidthChange() 함수 아니면 cancelPainting() 함수(페인팅을 마치면 새 경로를 생성)에 넣어야함
+        ctx.beginPath();
+        ctx.lineWidth = event.target.value;
+    }
+
+
 }
