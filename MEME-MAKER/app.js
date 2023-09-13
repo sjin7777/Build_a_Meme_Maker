@@ -394,7 +394,7 @@ if(true) {
     // 유저가 그리고 있는지 여부를 나타내는 isPainting의 값을 false로 변경
     function cancelPainting() {
         isPainting = false;
-        // ctx.beginPath();
+        ctx.beginPath();
     }
 
 
@@ -450,7 +450,7 @@ const lineWidth = document.querySelector('#line-width');
 ctx.lineWidth = lineWidth.value;
 
 if(true) {
-    // 1. html 파일에 input 태그 생성
+    // 1. html 파일에 input 태그 생성 (선의 굵기)
     //  - 기본값 5, 범위: 1~10, 단계: 0.5(값 설정 안했을 시 디폴트는 1)
     //      => <input id="line-width" type="range" value="5" min="1" max="10" />
 
@@ -460,9 +460,372 @@ if(true) {
     function onLineWidthChange(event) {
         // 모든 line들은 같은 path로 그려지기 때문에 새 경로로 시작해야 함
         // 여기있는 onLineWidthChange() 함수 아니면 cancelPainting() 함수(페인팅을 마치면 새 경로를 생성)에 넣어야함
-        ctx.beginPath();
+        // ctx.beginPath();
         ctx.lineWidth = event.target.value;
     }
 
+}
+
+
+
+
+///* 2.3 - Paint Color part One */
+/* Line 색 변경하기 */
+
+const color = document.querySelector('#color');
+
+if(true) {
+    // 1. html 파일에 input 태그 생성 (색상)
+    //      => <input id="color" type="color" />
+
+    // 2. 색상을 선택할 수 있는 input 태그가 알아차리는 Listener 생성하기
+    //  input에 EventListener를 추가한 후, 함수와 연결하고 ctx 변경
+    color.addEventListener('change', onColorChange);
+
+    // fillColor(), strokeColor() 사용
+    // fillColor(): 사각형을 만들면 그 안에 채워주는 색상
+    // strokeColor(): 사각형을 만들면 그 사각형의 선의 색상
+    function onColorChange(event) {
+        // console.log(event.target.value);
+        ctx.strokeStyle = event.target.value;
+        ctx.fillStyle = event.target.value;
+    }    
+    
+}
+
+
+
+
+// ctrl + shift + L => console.log();
+// shift + alt + i
+
+
+
+///* 2.4 - Paint Color part Two */
+/* 사용자가 색상에 다른 옵션을 줄 수 있도록 하기 */
+if(true) {
+    // 1. 아래 링크에 있는 모든 색상들을 html파일에 넣기
+    // https://flatuicolors.com/palette/defo
+    /* 
+        #1abc9c
+        #3498db
+        #34495e
+        #27ae60
+        #8e44ad
+        #f1c40f
+        #e74c3c
+        #95a5a6
+        #d35400
+        #bdc3c7
+        #2ecc71
+        #e67e22
+    */
+    //  => <div class="color-option" style="background-color: #1abc9c;" data-color="#1abc9c"></div>
+    //     <div class="color-option" style="background-color: #3498db;" data-color="#3498db"></div>
+    //     <div class="color-option" style="background-color: #34495e;" data-color="#34495e"></div>
+    //     <div class="color-option" style="background-color: #27ae60;" data-color="#27ae60"></div>
+    //     <div class="color-option" style="background-color: #8e44ad;" data-color="#8e44ad"></div>
+    //     <div class="color-option" style="background-color: #f1c40f;" data-color="#f1c40f"></div>
+    //     <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c"></div>
+    //     <div class="color-option" style="background-color: #95a5a6;" data-color="#95a5a6"></div>
+    //     <div class="color-option" style="background-color: #d35400;" data-color="#d35400"></div>
+    //     <div class="color-option" style="background-color: #bdc3c7;" data-color="#bdc3c7"></div>
+    //     <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71"></div>
+    //     <div class="color-option" style="background-color: #e67e22;" data-color="#e67e22"></div>
+    
+
+    // 2. style.css에서 index.html에 넣은 색상들이 보이도록 css 넣기
+    //  => width, height 값을 주고, 
+    //    cursor를 pointer로 해서 마우스를 가져다댔을때, 마우스 커서를 손가락으로 가리키는 커서로 바꾸기
+
+
+    // 3. 브라우저에서 보여지는 색상들을 JS에서 접근하기
+    //  - Array.from을 이용해서 배열로 생성
+    //  - 배열이 아니라면, HTML Collection으로 주기 때문
+    const colorOptions = Array.from(document.getElementsByClassName('color-option'));
+    // console.log(colorOptions);
+
+
+    // 4. 각 div에(color마다) EventListener 추가하기
+    colorOptions.forEach(color => color.addEventListener('click', onColorClick));
+    
+    // color를 클릭할 때마다 호출됨
+    // data-color를 활용해서 어떤 색상이 클릭되었는지 알아냄
+    // data- : html 태그에 원하는 정보(문자열)를 넣을 수 있음 
+    //      console.dir()로 확인해보았을 때, dataset에서 그 값을 확인 가능
+    function onColorClick1(event) {
+        console.dir(event.target.dataset.color);
+    }
+
+
+    // 5. 선택한 색상으로 ctx의 strokeStyle과 fillStyle의 값 바꿔주기
+    function onColorClick2(event) {
+        ctx.strokeStyle = event.target.dataset.color;
+        ctx.fillStyle = event.target.dataset.color;
+    }
+
+    // 6. 유저에게 클릭한 색상으로 잘 작동되었다는걸 알려주기 위해 color 박스 안의 색깔을 클리갛 색깔로 바꾸어주기
+    function onColorClick(event) {
+        const colorValue = event.target.dataset.color; 
+        ctx.strokeStyle = colorValue;
+        ctx.fillStyle = colorValue;
+        color.value = colorValue;
+    }
+
+}
+
+
+
+
+
+///* 2.5 - Filling Mode */
+/* 버튼 클릭시 선을 그리는 버튼이 아닌, 색깔을 채워넣을 수 있는 버튼 만들기 */
+
+const modeBtn = document.querySelector('#mode-btn');
+let isFilling = false;
+
+if(true) {
+    // 1. html 파일에서 color 관련 input 태그와 div 태그들을 한 개의 div 안에 넣어주기
+
+    // 2. 클릭 시 그리기 모드 / 채우기 모드 버튼 생성
+    //  => <button id="mode-btn">Fill</button>
+
+    // 3. modeBtn에 이벤트리스너 추가
+    //  - 클릭 시 모드를 변경하는 버튼(그리기 모드 / 채우기 모드)
+    //  - 그리기 모드: 선 그림
+    //  - 채우기 모드: canvas 전체를 채움
+    modeBtn.addEventListener('click', onModeClick);
+
+    // 클릭 시 isFilling 변경해주고, 버튼 글자 변경
+    function onModeClick() {
+        // 버튼 클릭 시 그리기 모드로 변경
+        if(isFilling) {
+            isFilling = false;
+            modeBtn.innerText = 'Fill';
+
+        // 버튼 클릭 시 채우기 모드로 변경
+        } else {
+            isFilling = true;
+            modeBtn.innerText = 'Draw';
+        }
+    }
+
+    // 4. canvas 채우기
+    canvas.addEventListener('click', onCanvasClick);
+    
+    function onCanvasClick() {
+        if(isFilling) {
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+}
+
+
+
+
+
+///* 2.6 - Eraser */
+/* 그림판을 초기화하는 버튼 만들기 */
+
+const destroyBtn = document.querySelector('#destroy-btn');
+
+if(true) {
+    // 1. html 파일에 리셋 버튼 만들기
+    //  => <button id="destroy-btn">Destroy</button>
+
+    // 2. destroyBtn 클릭 시 리셋되는 이벤트리스너 생성
+    destroyBtn.addEventListener('click', onDestroyClick);
+
+    function onDestroyClick() {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+
+/* 지우기 버튼 만들기 */
+
+const eraserBtn = document.querySelector('#eraser-btn');
+
+if(true) {
+    // 1. html 파일에 지우기 버튼 만들기
+    //  => <button id="eraser-btn">Eraser</button>
+
+    // 2. eraserBtn 클릭 시 지워지는 이벤트리스너 생성
+    eraserBtn.addEventListener('click', onEraserClick);
+
+    function onEraserClick() {
+        ctx.strokeStyle = 'white';
+        // 채우기 모드일 때 이 버튼을 클릭하면, 그리기 모드로 변경해줌
+        isFilling = false;
+        modeBtn.innerText = 'Fill';
+    }
+}
+
+
+
+
+
+
+///* 2.7 - Recap */
+if(true) {
+    // 1. range input 생성
+    //  - 숫자 값으로 수정이 가능하고, 이 값의 최소와 최대를 조절해줄 수 있음
+    //  - 단계도 설정 가능하며 value의 값은 디폴트 값을 의미
+    //      => <input id="line-width" type="range" value="5" min="1" max="10" step="0.5" />
+    //      => const lineWidth = document.querySelector('line-width');
+    //  - JS보다 HTML element가 먼저 로드되기 때문에, JS가 실행될 때, ctx.lineWidth를 input의 기본값으로 초기화해주어야 함
+    //      (lineWidth의 현재 값으로 딱 한번만 실행됨)
+    //      => ctx.lineWidth = lineWidth.value;
+    
+    // 2. range input의 값이 변경될 때마다 ctx의 lineWidth의 값을 변경해주는 함수를 실행시키도록 이벤트리스너 추가
+    //  - 변화를 감지해야 하므로 type은 change
+    //      => lineWidth.addEventListener('change', onLineWidthChange);
+
+    // 3. color input 생성
+    //  - 현재 색상을 보여줌
+    //      => <input id="color" type="color" />
+    //      => const color = document.querySelector('#color');
+
+    // 4. color input의 값이 변경될 때마다 색을 변경해주는 함수를 실행시키도록 이벤트리스너 추가
+    //  - 변화를 감지해야 하므로 type은 change
+    //      => color.addEventListener('change', onColorChange);
+
+    // 5. 유저가 리스트 안에서 고를 수 있도록 12가지 색상을 div로 만들고 각각 style에 color를 지정해줌
+    //  - 같은 class 이름으로 설정함
+    //  - HTMLCollection 요소가 아닌 배열의 값이 필요하기 때문에 Array.form을 이용하여 Collection을 array로 변경
+    //  - data-* attribute에 색상 코드를 넣어서 js에서도 접근이 가능하도록 함
+    //  - html에서 data-* attribute를 사용하면 원하는 문자열 어떤 값이든 넣어줄 수 있음
+    //      => <div class="color-option" style="background-color: #1abc9c;" data-color="#1abc9c"></div>
+    //         <div class="color-option" style="background-color: #3498db;" data-color="#3498db"></div>
+    //         <div class="color-option" style="background-color: #34495e;" data-color="#34495e"></div>
+    //         <div class="color-option" style="background-color: #27ae60;" data-color="#27ae60"></div>
+    //         <div class="color-option" style="background-color: #8e44ad;" data-color="#8e44ad"></div>
+    //         <div class="color-option" style="background-color: #f1c40f;" data-color="#f1c40f"></div>
+    //         <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c"></div>
+    //         <div class="color-option" style="background-color: #95a5a6;" data-color="#95a5a6"></div>
+    //         <div class="color-option" style="background-color: #d35400;" data-color="#d35400"></div>
+    //         <div class="color-option" style="background-color: #bdc3c7;" data-color="#bdc3c7"></div>
+    //         <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71"></div>
+    //         <div class="color-option" style="background-color: #e67e22;" data-color="#e67e22"></div>
+    //      => const colorOptions = Array.from(document.getElementsByClassName('color-option'));
+
+    // 6. colorOptions 배열에 forEach를 사용해 onColorClick 함수를 가진 클릭 이벤트리스너를 추가함
+    //  - 색깔 박스를 클릭 시, data-* attribute에서 color를 가져오도록 함
+    //  - data-*에 원하는 데이터를 넣으면 JS에서 event.target.dataset이라는 값을 통해서 사용할 수 있음
+    //  - 유저가 색깔을 클릭하면, 선의 색깔, 채우기 색깔, color input값도 바꾸어 줌
+    //   (유저에게 클릭한 색깔로 바뀌었다는걸 알려주고 싶기 때문)
+    //      => colorOptions.forEach((color) => color.addEventListener('click', onColorClick));
+
+    // 7. mode-btn 버튼 생성
+    //  - 클릭 시 그리기모드 / 채우기모드로 변경해주는 버튼
+    //      => <button id="mode-btn">Fill</button>
+    //      => const modeBtn = document.querySelector('#mode-btn');
+
+    // 8. mode-btn 버튼 클릭시 모드를 변경해주는 이벤트리스너 추가
+    //  - fill(채우기 모드) 버튼 클릭 시, 그리기 모드를 멈추고 modeBtn 텍스트를 draw로 변경하여 유저에게 모드가 변경된걸 알려줌
+    //   draw(그리기 모드) 버튼 클릭 시, 채우기 모드를 멈추고 modeBtn 텍스트를 Fill로 변경하여 유저에게 모드가 변경된걸 알려줌
+    //      => modeBtn.addEventListener('click', onModeClick);
+
+    // 9. 채우기 리스너 추가
+    //      => canvas.addEventListener('click', onCanvasClick);
+    //  - fillRect()를 이용하여 (x,y) 좌표를 넣고, canvas의 가로와 세로 길이를 넣음
+    //  - 다 채워야 하므로 x, y의 좌표는 (0, 0)으로 설정
+    //      => ctx.fillRect(0, 0, cavas.width, canvas.height);
+
+    // 10. destroy-btn 버튼 생성
+    //  - 클릭 시 그림들 리셋 해주는 버튼
+    //      => <button id="destroy-btn">Destroy</button>
+    //      => const destroyBtn = document.querySelector('#destroy-btn');
+    
+    // 11. destroy-btn 버튼 클릭시 초기화해주는 이벤트리스너 추가
+    //  - 흰색으로 다 채우면 됨
+    //      => destroyBtn.addEventListener('click', onDestroyClick);
+
+    // 12. ereaser-btn 버튼 생성
+    //  - 클릭 시 지워주는 버튼
+    //      => <button id="eraser-btn">Eraser</button>
+    //      => const eraserBtn = document.querySelector('#eraser-btn');
+
+    // 13. ereaser-btn 버튼 클릭시 지워주는 이벤트리스너 추가
+    //  - 흰색으로 그려주면 됨
+    //  - 이 버튼 클릭 시 채우기모드는 종료됨
+    //      => eraserBtn.addEventListener('click', onEraserClick);
+
+}
+
+
+
+
+
+
+///* 3.0 - Adding Images */
+/* 밈 메이커 기능 만들기 */
+
+const fileInput = document.querySelector('#file');
+
+if(true) {
+    /* 밈 메이커 기능 - canvas에 이미지 넣기, 이미지 위에 텍스트 넣기 */
+    
+    // 1. HTML에 input 추가하기
+    //  => <input id="file" type="file" accept="image/*" />
+
+
+    // 2. file 변경시 실행하는 이벤트리스너 생성
+    fileInput.addEventListener('change', onFileChange);
+
+    // 파일을 선택하면 브라우저의 메모리 속에 파일이 있게 되는데, JS를 이용해서 그 파일을 가리키는 URL을 얻기
+    function onFileChange1(event) {
+        // 파일명
+        // console.dir(event.target.files[0].name);
+
+        // 파일을 선택하면 업로드한 파일을 가져옴
+        const file = event.target.files[0];
+        
+        // URL로 파일에 접근하기
+        // 브라우저의 메모리에서 파일의 URL을 얻어옴
+        // 현실에서는 존재하지 않는 URL이자 브라우저를 위한 URL
+        // 브라우저가 자신의 메모리에 있는 파일을 드러내는 방식
+        // 해당 URL은 이미지에 접근 가능한 브라우저를 위한 URL임(크롬)
+        const url = URL.createObjectURL(file);
+        console.log(url);   
+        // blob:http://127.0.0.1:5501/471d6af6-128b-4d99-8bcf-363d3c9b3360
+
+
+        // html의 <img src="" />를 JS로 씀
+        const image = new Image();
+        // 이미지 src에 브라우저의 메모리를 가리키는 URL 넣기
+        image.src = url;
+    }
+
+
+    // 3. image에 이벤트리스너 생성
+    function onFileChange(event) {
+        const file = event.target.files[0];
+        const url = URL.createObjectURL(file);
+        // blob:http://127.0.0.1:5501/471d6af6-128b-4d99-8bcf-363d3c9b3360
+
+        const image = new Image();
+        image.src = url;
+
+        // 아래 코드와 같음
+        image.onload = function() {
+            // 이미지, 좌표(x, y), 크기(w, h)
+            // canvas 크기로 설정
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            
+            // 이미지를 다 그리고 나면 file input 비워서 다른 file로 선택할 수 있게 하기
+            fileInput.value = null;
+        }
+        
+        /* 
+        image.addEventListener('load', onloadFile);
+        function onloadFile() {
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            fileInput.value = null;
+        } 
+        */
+    }
 
 }
