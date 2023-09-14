@@ -611,7 +611,8 @@ if(true) {
     }
 
     // 4. canvas 채우기
-    canvas.addEventListener('click', onCanvasClick);
+    // click으로 되어있었는데 mousedown으로 하는게 맞는 것 같아서 수정...
+    canvas.addEventListener('mousedown', onCanvasClick);
     
     function onCanvasClick() {
         if(isFilling) {
@@ -630,14 +631,14 @@ if(true) {
 
 const destroyBtn = document.querySelector('#destroy-btn');
 
-if(true) {
+if(false) {
     // 1. html 파일에 리셋 버튼 만들기
     //  => <button id="destroy-btn">Destroy</button>
 
     // 2. destroyBtn 클릭 시 리셋되는 이벤트리스너 생성
     destroyBtn.addEventListener('click', onDestroyClick);
 
-    function onDestroyClick() {
+    function onDestroyClick1() {
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -806,7 +807,11 @@ if(true) {
         const url = URL.createObjectURL(file);
         // blob:http://127.0.0.1:5501/471d6af6-128b-4d99-8bcf-363d3c9b3360
 
+        // 아래 코드와 같음
+        // const image = document.createElement('img');
         const image = new Image();
+        
+
         image.src = url;
 
         // 아래 코드와 같음
@@ -828,4 +833,254 @@ if(true) {
         */
     }
 
+}
+
+
+
+
+
+
+///* 3.1 - Adding Text */
+/* text input 만들기 */
+// user가 text를 입력할 수 있고, Canvas를 더블클릭하면 그 text를 추가하기
+
+const textInput = document.querySelector('#text');
+
+if(true) {
+    // 1. index.html에서 input 생성
+    //      => <input id="text" type="text" placeholder="Write and then double click"/>
+
+    // 2. canvas에 더블클릭했을 때의 이벤트리스너 추가
+    //  - 더블클릭 이벤트는 mousedown, mouseup이 매우 빠르게 일어날 때 발생함
+    canvas.addEventListener('dblclick', onDoubleClick);
+
+    function onDoubleClick1(event) {
+        const text = textInput.value;
+
+        // 마우스가 클릭한 canvas 내부 좌표 (text를 추가할 좌표)
+        // console.log(event.offsetX, event.offsetY);
+        
+        // 선의 굵기를 낮춰야 글자가 보임
+        ctx.lineWidth = 1;
+        ctx.strokeText(text, event.offsetX, event.offsetY);
+        
+        // 글자를 작성한 후 선의 굵기를 다시 되돌려야 함
+    }
+
+    function onDoubleClick2(event) {
+        const text = textInput.value;
+
+        // save(): ctx의 현재 상태, 색상, 스타일 등 모든 것을 저장함
+        ctx.save();
+
+
+        /* ctx 수정 */
+        // 선의 두께
+        ctx.lineWidth = 1;
+        // font는 두가지 property를 지정할 수 있음 (size, font-family)
+        ctx.font = "68px serif";
+        // 테두리만 있는 text 그리기
+        // ctx.strokeText(text, event.offsetX, event.offsetY);
+        // 글자가 채워진 text 그리기
+        ctx.fillText(text, event.offsetX, event.offsetY);
+
+        
+        // restore(): ctx 다시 되돌리기
+        // save()와 restore()사이에서 수정을 하면 저장되지 않음
+        // 변경되는 코드가 실행되기 전에 현재 상태와 선택들을 저장하기 때문
+        // 이전에 저장된 상태로 돌아간다고 생각하기
+        ctx.restore();
+
+        // 유저가 canvas를 더블클릭해도 inputText에 text가 없으면 하지 않기
+    }
+
+    function onDoubleClick(event) {
+        const text = textInput.value;
+        // text가 있을 경우에만 실행
+        if(text !== "") {
+            ctx.save();
+    
+            ctx.lineWidth = 1;
+            ctx.font = "68px serif";
+            ctx.fillText(text, event.offsetX, event.offsetY);
+    
+            ctx.restore();
+        }
+    }
+
+    // 3. 선끝 모양 변경
+    // 선 끝을 둥글게 변경
+    ctx.lineCap = "round";
+}
+
+
+
+
+
+
+///* 3.2 - Saving image */
+/* 이미지 저장하기 */
+
+const saveBtn = document.querySelector('#save');
+
+if(true) {
+    // 1. html에 이미지 저장하는 버튼 만들기
+    //      => <button id="save">Save image</button>
+
+    // 2. 클릭 시 canvas안에 있는 이미지를 저장하는 이벤트리스너 추가
+    saveBtn.addEventListener('click', onSaveClick);
+
+    function onSaveClick() {
+        // 이미지를 base64로 인코딩한 텍스트 (URL로 인코딩)
+        const url = canvas.toDataURL();
+        // console.log(canvas.toDataURL());
+
+        // a 태그를 이용
+        // 링크를 만들고, 그 링크에 위에 있는 url 넣기
+        // download 속성 이용
+
+        // a 태그 생성
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'myDrawing.png';
+        a.click();
+    }
+}
+
+
+
+
+
+///* 3.3 - Recap */
+
+if(true) {
+    // 1. 이미지 파일만 선택할 수 있는 file input 생성
+    //      => <input id="file" type="file" accept="image/*" />
+    //      => const fileInput = document.querySelector('#file');
+
+    // 2. file input에 이벤트 리스너 추가
+    //  2-1. 파일에 변화가 생기면 함수 실행
+    //        => fileInput.addEventListener('change', onFileChange);
+    //  2-2. 해당 함수가 실행되면 input에 있는 파일을 읽어옴
+    //      현재 유저가 업로드한 파일은 이미 브라우저의 메모리 안에 있으므로 유저가 업로드한 파일을 불러옴
+    //        => const file = event.target.files[0];
+    //          - 참고로 파일 배열인 이유는 input에 multiple 속성을 추가할 수 있기 때문
+    //           multiple 속성을 추가하면 유저가 파일을 여러 개 업로드 할 수 있음
+    //           여기서는 유저가 하나의 파일만 업로드하고 있기 때문에 파일 배열에서 첫번째 파일만 필요함
+    //  2-3. 파일의 URL 불러옴 
+    //      URL을 이용하여 해당 파일에 접근하려고 하기 때문에 createObjectUrl 메서드를 호출
+    //      이 메서드를 이용하면 해당 파일의 브라우저 메모리 URL을 알아낼 수 있음
+    //      (유저가 파일을 업로드한 브라우저 안에서만 사용할 수 있는 URL)
+    //        => const url = URL.createObjectURL(file);
+    //  2-4. 이미지 태그 생성 (생성 방법은 2개)
+    //        => const image = new Image();
+    //        => const image = document.createElement('img');
+    //  2-5. img 태그의 src 속성을 브라우저에서 블러온 URL로 설정
+    //        => image.src = url;
+
+    // 3. 이미지에 이벤트 리스너 추가
+    //  - 이미지 불러오면 이미지를 canvas에 채움
+    //  - (x,y)좌표 = (0,0) / 이미지 크기 = canvas의 가로, 세로
+    //  - input에 있는 파일을 비워주기 (이미지 불러오고 난 뒤에 다른 이미지로도 다시 불러올 수 있도록 설정)
+    //   기존 이미지 위에 새로운 이미지를 올릴 수 있음
+    //      => addEventListener를 사용하지 않고 이벤트 리스너 설정
+    //          image.onload = function() {
+    //              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    //              fileInput.value = null;
+    //          };
+    //      => addEventListener를 사용하여 이벤트 리스너 설정
+    //          image.addEventListener('load', onloadFile);
+    //          function onloadFile() {
+    //              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    //              fileInput.value = null;
+    //          }     
+
+    // 4. text를 작성하여 canvas에 보이게 하는 text input 생성
+    //      => <input id="text" type="text" placeholder="Write and then double click"/>
+    //      => const textInput = documeng.querySelector('#text');
+
+    // 5. textInput이 아닌 canvas에 이벤트 리스너 추가
+    //  - 작성한 text를 더블 클릭한 canvas 위치에 나타냄
+    //  - text의 값이 비어있지 않을 경우에만 실행하도록 설정
+    //  5-1. 현재 ctx의 상태를 저장함
+    //      - ctx를 수정하면 모든 것에 영향을 미치기 때문에 ctx를 수정하기 전에 먼저 저장함
+    //          => ctx.save();
+    //  5-2. ctx 변경
+    //      - ctx의 선 두께, ctx의 font 지정
+    //          => ctx.font('68px sans-serif');
+    //  5-3. 유저가 canvas 안에서 더블클릭한 위치에 text를 배치
+    //          => ctx.fillText(text, event.offsetX, event.offsetY);
+    //  5-4. 이전에 저장해두었던 ctx를 복구
+    //      - 복구하지 않으면, 변경된 상태로 모든 ctx에 설정됨
+    //          => ctx.restore();
+
+    // 6. canvas를 저장할 수 있는 save button 생성
+    //      => <button id="save">Save image</button>
+    //      => const saveBtn = document.querySelector('#save');
+
+    // 7. save 버튼 클릭 시 canvas를 저장할 수 있는 이벤트 리스너 추가
+    //      => saveBtn.addEventListener('click', onSaveClick);
+    //  7-1. canvas의 URL 얻기
+    //      - canvas.toDataURL(): canvas에 있는 그림 data를 URL로 변환해주는 메서드 (이미지를 문자열로 표현한 것)
+    //        => const url = canvas.toDataURL();
+    //  7-2. a 태그 생성
+    //        => const a = document.createElement('a');
+    //  7-3. canvas의 URL을 a 태그의 링크로 설정
+    //        => a.href = url
+    //  7-4. a 태그에 download 속성 추가
+    //      - download 속성: 브라우저에게 href에 있는 컨텐츠를 다운로드 하라고 알리는 역할
+    //      - download 속성으로 파일 이름 설정 가능
+    //          => a.download = 'myDrawing.png';
+    //  7-5. 가짜로 a 태그 클릭
+    //      - 가짜 클릭으로 인해 다운로드 창을 띄워줌
+    //          => a.click();
+
+
+}
+
+
+
+
+///* 3.4 - CSS */
+
+if(true) {
+    // 1. reset css 설치 (해당 링크에 있는 코드를 reset.css 파일에 복붙)
+    //  - https://meyerweb.com/eric/tools/css/reset/
+
+    // 2. styles.css에 import
+    //      => @import "reset.css";
+
+    // 3. HTML 정리
+    //  - 색상관련 태그를 canvas 앞으로 옮기기
+    //  - 버튼들을 하나의 div에 넣기
+    //  - label 태그 생성 후 file input 감싸기 
+
+    // 4. css 변경
+
+    // 5. 그림판 전체를 삭제하는 버튼을 클릭할 때에는 확인창 뜨게 해보기
+    destroyBtn.addEventListener('click', onDestroyClick);
+    function onDestroyClick() {
+        if(confirm('초기화시키겠습니까?')) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+}
+
+
+
+
+
+///* 3.5 - Code Challenge */
+
+if(true) {
+    /* 1. text 폰트 바꿔보기  */
+    // 폰트 종류, 크기
+    //      => ctx.font = 'bold 48px serif';
+    // 폰트 fill 또는 stroke 중에 고르게 해보기
+    
+    /* 2. 선 뿐만 아니라 모양을 그릴 수 있는 옵션 생성해보기 */
+    // 모양을 그리고 마우스를 뗐을 때 그 모양을 색으로 채우려면 
+    // => cancelPainting()에 ctx.fill() 추가하면 됨
 }
